@@ -1,0 +1,1891 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "REST Endpoints API",
+    "version": "0.0.1"
+  },
+  "servers": [
+    {
+      "url": "https://api-eval.signnow.com",
+      "description": "API Sandbox environment"
+    },
+    {
+      "url": "https://api.signnow.com",
+      "description": "API Production environment"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "scheme": "basic",
+        "type": "https",
+        "in": "header"
+      },
+      "sec1": {
+        "scheme": "oauth2",
+        "type": "https",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "invite_stepobjects": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "int"
+          },
+          "invite_actions": {
+            "type": "array_object"
+          },
+          "invite_emails": {
+            "type": "array_object"
+          }
+        },
+        "required": [
+          "order",
+          "invite_actions"
+        ]
+      },
+      "Inviteemailobjects": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "disabled": {
+            "type": "boolean"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "reminder": {
+            "type": "int"
+          },
+          "expiration_days": {
+            "type": "int"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "invite_actions": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "document_id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "role_name": {
+            "type": "string"
+          },
+          "allow_reassign": {
+            "type": "boolean"
+          },
+          "authentication": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "document_id",
+          "action",
+          "role_name"
+        ]
+      },
+      "completion_emails": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "disabled": {
+            "type": "boolean"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "disable_document_attachment": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "Update_invite_action_attribute": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "type": "string"
+          },
+          "allow_reassign": {
+            "type": "boolean"
+          },
+          "authentication": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "document_id"
+        ]
+      },
+      "authentication": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": []
+      },
+      "SIGNER": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "order": {
+            "type": "string"
+          },
+          "role_id": {
+            "type": "string"
+          },
+          "authentication_type": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "expiration_days": {
+            "type": "int"
+          },
+          "reminder": {
+            "type": "int"
+          }
+        },
+        "required": [
+          "email",
+          "role",
+          "order",
+          "role_id"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/documentgroup": {
+      "post": {
+        "tags": [
+          "document group"
+        ],
+        "summary": "POST /documentgroup",
+        "description": "Create a document group from a list of document ids",
+        "operationId": "create-a-document-group-from",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "document_ids",
+                  "group_name"
+                ],
+                "properties": {
+                  "document_ids": {
+                    "type": "array",
+                    "description": "All document_ids: 1. Must be owned by the person creating the document group. 2. Cannot be templates. 3. Cannot already be a part of another document group (delete document group first to add them). At least one of the documents must have fields.",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "group_name": {
+                    "type": "string",
+                    "description": "String containing the group name"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {},
+        "deprecated": false
+      }
+    },
+    "/user/documentgroups": {
+      "get": {
+        "tags": [
+          "document group"
+        ],
+        "summary": "GET /user/documentgroups",
+        "description": "The call returns back all document groups the user owns.  If the group does not have an attached group invite, the invite fields will be null.  Each group includes an array of documents and their thumbnails within the group.  Thumbnail calls will need the query parameter ```&access_token=ACCESS_TOKEN``` to be used.\n\nThe call is paginated by last_updated, so offset and limit query parameters are required:\n1. Limit must be greater than 0 but less than or equal to 50.\n2. Offset must be 0 or greater.",
+        "operationId": "back-all-document-groups",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Limit must be greater than 0 but less than or equal to 50",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Offset must be 0 or greater.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/user": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "POST /user",
+        "description": "Create a user. Recently changed to not generate a token. See POST /oauth2/token for instructions on generating a token for the new user.",
+        "operationId": "create-a-user",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "body",
+            "description": "User's email address",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Password",
+            "in": "body",
+            "description": "Password",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "description": "Email of user"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Password of user"
+                  },
+                  "first_name": {
+                    "type": "string",
+                    "description": "First name of user"
+                  },
+                  "last_name": {
+                    "type": "string",
+                    "description": "Last name of user"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      },
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "GET /user",
+        "description": "Retrieve a user resource",
+        "operationId": "retrieve-a-user-resource",
+        "parameters": [],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/user/documentsv2": {
+      "get": {
+        "tags": ["User"],
+        "summary": "GET /user/documentsv2",
+        "description": "Retrieve a list of the user's documents",
+        "operationId": "retrieve-a-list-of-the-users-documents",
+        "parameters": [],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/documentgroup/{document_group_id}/groupinvite/{invite_id}": {
+      "get": {
+        "tags": ["Document group"],
+        "summary": "GET /documentgroup//groupinvite/",
+        "description": "Returns back invite action information for a group invite, including the status of each step and action.  This can only be called by the owner of the document group.  Status can be:\n1)'created': invite or action has been created but is not waiting to be signed\n2)'pending': emails have been sent out for this invite action or step and are waiting to be viewed or signed\n3)'fulfilled': actions and steps that have been finished by singing or viewing",
+        "operationId": "returns-back-invite-action-information",
+        "parameters": [
+          {
+            "name": "document_group_id",
+            "in": "path",
+            "description": "Unique id of document group",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invite_id",
+            "in": "path",
+            "description": "Unique id of document group invite",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/documentgroup/{document_group_id}/groupinvite/{invite_id}/cancelinvite": {
+      "post": {
+        "tags": ["Document group"],
+        "summary": "POST /documentgroup//groupinvite//cancelinvite",
+        "description": "Cancels a group invite.  All documents will be unshared with invitees. Any signatures that occurred before canceling will remain on the documents.",
+        "operationId": "cancels-a-group-invite",
+        "parameters": [
+          {
+            "name": "document_group_id",
+            "in": "path",
+            "description": "Unique id of document group",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invite_id",
+            "in": "path",
+            "description": "Unique id of document group invite",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/documentgroup{document_group_id}": {
+      "delete": {
+        "tags": ["Document group"],
+        "summary": "DELETE /documentgroup",
+        "description": "Deletes the document group.  Documents within the group are not deleted.  Document groups cannot be deleted while they have a group invite",
+        "operationId": "deletes-the-document-group",
+        "parameters": [
+          {
+            "name": "document_group_id",
+            "in": "path",
+            "description": "Unique id of document group",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/documentgroup/{document_group_id}/groupinvite/{invite_id}/invitestep/{step_id}/update": {
+      "post": {
+        "tags": [],
+        "summary": "POST /documentgroup//groupinvite//invitestep//update",
+        "description": "Used to either replace invitees for a particular step or update the invite attributes for a user at a particular step",
+        "operationId": "replace-invitees",
+        "parameters": [
+          {
+            "name": "document_group_id",
+            "in": "path",
+            "description": "Unique id of document group",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invite_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "step_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "user_to_update"
+                ],
+                "properties": {
+                  "user_to_update": {
+                    "type": "string",
+                    "description": "Email of user that needs to be updated."
+                  },
+                  "replace_with_this_user": {
+                    "type": "string",
+                    "description": "Email of user that will replace the \"user_to_update\" user."
+                  },
+                  "invite_email": {
+                    "type": "object",
+                    "description": "Email Object containing invite_email attributes to update.",
+                    "properties": {
+                      "email": {
+                        "type": "string",
+                        "description": "Email of user receiving invite email.",
+                        "required": true,
+                        "default": ""
+                      },
+                      "disabled": {
+                        "type": "boolean",
+                        "description": "Determines whether email in the step should be disabled",
+                        "required": false,
+                        "default": ""
+                      },
+                      "subject": {
+                        "type": "string",
+                        "description": "The custom subject for the invite email.",
+                        "required": false,
+                        "default": ""
+                      },
+                      "message": {
+                        "type": "string",
+                        "description": "The custom message for the invite email.",
+                        "required": false,
+                        "default": ""
+                      },
+                      "reminder": {
+                        "type": "integer",
+                        "description": "Number of days until a reminder is sent if user has not completed the signing actions.",
+                        "required": false,
+                        "default": "",
+                        "format": "int32"
+                      },
+                      "expiration_days": {
+                        "type": "integer",
+                        "description": "Number of days until the signing actions for the user expire.",
+                        "required": false,
+                        "default": "",
+                        "format": "int32"
+                      }
+                    }
+                  },
+                  "update_invite_action_attributes": {
+                    "type": "array",
+                    "description": "Array of objects that indicate for which document, invite attributes need to be updated.",
+                    "items": {
+                      "properties": {
+                        "document_id": {
+                          "type": "string",
+                          "description": "Indicates which action needs to be updated by document_id for user.",
+                          "default": ""
+                        },
+                        "allow_reassign": {
+                          "type": "boolean",
+                          "description": "Determines whether the invitee can reassign this invite.  Not carried over from previous invite and must be reentered.",
+                          "default": ""
+                        },
+                        "authentication": {
+                          "type": "object",
+                          "description": "An object consisting of a type field and a value field. Not carried over from previous invite and must be reentered.",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "description": "Currently the only type allowed is \"password\".",
+                              "required": false,
+                              "default": ""
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "The value field will be the password you set. If set the invite will be locked by this password. If not set the document will not be password protected.",
+                              "required": false,
+                              "default": ""
+                            }
+                          }
+                        }
+                      },
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/documentgroup/{document_group_id}": {
+      "get": {
+        "tags": [],
+        "summary": "GET /documentgroup/",
+        "description": "Returns back document and role information for documents in a document group.  Only the owner of the document group can make this call.  The invite_id property will be null if there is no group invite for the group yet.",
+        "operationId": "returns-back-document-and-role-information-for-documents-in-a-document-group",
+        "parameters": [
+          {
+            "name": "document_group_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/documentgroup/{document_group_id}/groupinvite/{invite_id}/pendinginvites": {
+      "get": {
+        "tags": [],
+        "summary": "GET /documentgroup//groupinvite//pendinginvites",
+        "description": "Returns back all pending invite information as well as invites already signed for a group invite for the user that makes the call.  If the user making the call is the document owner, it will return pending invites for that user and ALL actions that have already been fulfilled.",
+        "operationId": "returns-back-all-pending-invite-information",
+        "parameters": [
+          {
+            "name": "document_group_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invite_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/documentgroup/{document_group_id}/groupinvite": {
+      "post": {
+        "tags": [],
+        "summary": "POST /documentgroup//groupinvite",
+        "description": "This call creates a multi-step invite for a document group. Each invite step consists of invite_email objects that set the email message sent in the user invites or can disable emails all together for that user.  Invite steps also are made of the invite_action objects that need to be completed before the step is considered complete.  Invite actions tell SignNow which users should sign which document roles.  Once all the invite_actions are completed, the next step's invite emails are sent out.  When all steps have been completed, completion emails are sent out, which are defined by the completion_email objects.",
+        "operationId": "creates-a-multi-step-invite-for-a-document-group",
+        "parameters": [
+          {
+            "name": "document_group_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "invite_steps"
+                ],
+                "properties": {
+                  "invite_steps": {
+                    "type": "array",
+                    "description": "Array of invite_step objects",
+                    "items": {
+                      "properties": {
+                        "order": {
+                          "type": "integer",
+                          "description": "An integer from 1 to 100.  All invite steps must have a unique order.",
+                          "default": "",
+                          "format": "int32"
+                        },
+                        "invite_actions": {
+                          "type": "array",
+                          "description": "Array of invite action objects.",
+                          "items": {
+                            "properties": {
+                              "email": {
+                                "type": "string",
+                                "description": "Email of user who needs to sign/view the document.",
+                                "default": ""
+                              },
+                              "document_id": {
+                                "type": "integer",
+                                "description": "Document id user is to sign/view.",
+                                "default": "",
+                                "format": "int32"
+                              },
+                              "action": {
+                                "type": "string",
+                                "description": "Can be values of 'sign' or 'view'.",
+                                "default": ""
+                              },
+                              "role_name": {
+                                "type": "string",
+                                "description": "Role the user should sign, only required if the action is 'sign'.",
+                                "default": ""
+                              },
+                              "allow_reassign": {
+                                "type": "boolean",
+                                "description": "Determines whether the invitee can reassign this invite.",
+                                "default": ""
+                              },
+                              "authentication": {
+                                "type": "string",
+                                "description": "An object consisting of a type field and a value field. Currently the only type allowed is \"password\". The value field will be the password you set.  If set the invite will be locked by this password. If authentication is not set the document will not be password protected.",
+                                "default": ""
+                              }
+                            },
+                            "type": "object"
+                          }
+                        },
+                        "invite_emails": {
+                          "type": "array",
+                          "description": "Email objects containing invite email contents for each user",
+                          "items": {
+                            "properties": {
+                              "email": {
+                                "type": "string",
+                                "description": "Email of user receiving invite email.",
+                                "default": ""
+                              },
+                              "disabled": {
+                                "type": "boolean",
+                                "description": "Determines whether email in the step should be disabled",
+                                "default": ""
+                              },
+                              "subject": {
+                                "type": "string",
+                                "description": "The custom subject for the invite email.",
+                                "default": ""
+                              },
+                              "message": {
+                                "type": "string",
+                                "description": "The custom message for the invite email.",
+                                "default": ""
+                              },
+                              "reminder": {
+                                "type": "integer",
+                                "description": "Number of days until a reminder is sent if user has not completed the signing actions.",
+                                "default": "",
+                                "format": "int32"
+                              },
+                              "expiration_days": {
+                                "type": "integer",
+                                "description": "Number of days until the signing actions for the user expire.",
+                                "default": "",
+                                "format": "int32"
+                              }
+                            },
+                            "type": "object"
+                          }
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "completion_emails": {
+                    "type": "array",
+                    "description": "Email objects containing completion email contents for each user",
+                    "items": {
+                      "properties": {
+                        "email": {
+                          "type": "string",
+                          "description": "Email of user receiving completion email.  In the completion email, the user will only receive document attachments for documents they previously signed or viewed in the document group.",
+                          "default": ""
+                        },
+                        "disabled": {
+                          "type": "boolean",
+                          "description": "Determines whether compeltion email should be disabled.",
+                          "default": ""
+                        },
+                        "subject": {
+                          "type": "string",
+                          "description": "The custom subject for the completion email.",
+                          "default": ""
+                        },
+                        "message": {
+                          "type": "string",
+                          "description": "The custom message for the completion email.",
+                          "default": ""
+                        },
+                        "disable_document_attachment": {
+                          "type": "boolean",
+                          "description": "If set to 1, when user received completed email, document pdfs will not be attached to the email.",
+                          "default": ""
+                        }
+                      },
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/documentgroup/{document_group_id}/groupinvite/{invite_id}/resendinvites": {
+      "post": {
+        "tags": [],
+        "summary": "POST /documentgroup//groupinvite//resendinvites",
+        "description": "Resends invite emails to those with pending invites for the group invite.  Resend can also be used to resend invites to a single user if the user's email is specified in the POST JSON body.",
+        "operationId": "resends-invite-emails",
+        "parameters": [
+          {
+            "name": "document_group_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invite_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "description": "Email of the user you want to resend email to.  If not present, emails will be resent to all pending users."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/oauth2/token": {
+      "post": {
+        "tags": [],
+        "summary": "POST /oauth2/token",
+        "description": "Request an access token for a user",
+        "operationId": "token-for-a-user",
+        "parameters": [
+          {
+            "name": "Authorization  Basic",
+            "in": "header",
+            "description": "base64 encoded string of colon delimited Client_ID and Client_Secret (i.e. \"Client_ID:Client_Secret\"). You can encode client credentials using built-in function in all common programming languages or use an online encoder like: https://www.base64encode.net/",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "ENCODED_CLIENT_CREDENTIALS"
+            }
+          },
+          {
+            "name": "Content_type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "application/x-www-form-urlencoded"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "password",
+                  "grant_type"
+                ],
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "Email of user"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Password of user"
+                  },
+                  "grant_type": {
+                    "type": "string",
+                    "description": "Must be \"password\""
+                  },
+                  "scope": {
+                    "type": "string",
+                    "description": "A space delimited list of API URIs e.g. \"user%20documents%20user%2Fdocumentsv2\". By default scope: * , which enables all permissions"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      },
+      "get": {
+        "tags": [],
+        "summary": "GET /oauth2/token",
+        "description": "Verify an access token for a user",
+        "operationId": "verify-an-access-token",
+        "parameters": [],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/document/{document_id}": {
+      "get": {
+        "tags": [],
+        "summary": "GET /document/",
+        "description": "Retrieve a document resource",
+        "operationId": "retrieve-a-document-resource",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization Bearer",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      },
+      "put": {
+        "tags": [],
+        "summary": "PUT /document/",
+        "description": "Update an existing document. Add fields [signature | text | initials | checkbox ], elements [signature | text | check]",
+        "operationId": "update-an-existing-document",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      },
+      "delete": {
+        "tags": [],
+        "summary": "DELETE /document/",
+        "description": "Deletes a previously uploaded document.",
+        "operationId": "delete-document",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization Bearer",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/document/{document_id}/custom_history_event": {
+      "post": {
+        "tags": [],
+        "summary": "POST /document//custom_history_event",
+        "description": "Allows third party developers to add custom events to the audit log. For example, if you are using a single SignNow account to make API calls but authenticating multiple people, use this call to add a record to the audit log for that specific document that references the authentication method.",
+        "operationId": "add-custom-events-to-the-audit-log",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization bearer",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "client_timestamp": {
+                    "type": "string",
+                    "description": ""
+                  },
+                  "event_type": {
+                    "type": "string",
+                    "description": ""
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/document/{document_id}/fieldinvitecancel": {
+      "put": {
+        "tags": [],
+        "summary": "PUT /document//fieldinvitecancel",
+        "description": "Cancel an invite to a document.",
+        "operationId": "cancel-an-invite-to-a-document",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization Bearer",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/document/{document_id}/download/link": {
+      "post": {
+        "tags": [],
+        "summary": "POST /document//download/link",
+        "description": "Creates a one-time use URL for anyone to download the document as a PDF.",
+        "operationId": "one-time-url",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization bearer",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/document/{document_id}/move": {
+      "post": {
+        "tags": [],
+        "summary": "POST /document//move",
+        "description": "Move a document to the Archive folder or one of it's subfolders.",
+        "operationId": "move-a-document",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization Bearer",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "folder_id": {
+                    "type": "string",
+                    "description": ""
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/document/{document_id}/historyfull": {
+      "get": {
+        "tags": [],
+        "summary": "GET /document//historyfull",
+        "description": "Get the history of a document",
+        "operationId": "get-the-history-of-a-document",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization bearer",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/document/merge": {
+      "post": {
+        "tags": [],
+        "summary": "POST /document/merge",
+        "description": "Merges existing documents into one.",
+        "operationId": "merge",
+        "parameters": [
+          {
+            "name": "Content_type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "application/pdf"
+            }
+          },
+          {
+            "name": "Authorization bearer",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "document_ids",
+                  "name"
+                ],
+                "properties": {
+                  "document_ids": {
+                    "type": "array",
+                    "description": "An array of document IDs to merge",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the newly merged document"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/document/{document_id}/download": {
+      "get": {
+        "tags": [],
+        "summary": "GET /document//download",
+        "description": "Download a collapsed document",
+        "operationId": "deletes-a-previously-uploaded-document",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Possible values are \"collapsed\" or \"zip\". Collapsed returns the raw data of the pdf document that can be written to a blank .pdf file. Zip returns the raw data of a zip file containing the pdf and any attachments on that document that can be written to blank a .zip file.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "document_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization Bearer",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/document/{document_id}/download/collapsed?with_history=1": {
+      "get": {
+        "tags": [],
+        "summary": "GET /document//download/collapsed?with_history=1",
+        "description": "Download a collapsed document with a table containing the document's history.",
+        "operationId": "collapsed-document",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "with_history",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/document/fieldextract": {
+      "post": {
+        "tags": [],
+        "summary": "POST /document/fieldextract (Simple Field Tag)",
+        "description": "Uploads a file that contains SignNow Document Field Tags. This endpoint only accepts .pdf, .doc or .docx files.\nThere are two tag-types, one for simple field tags, and one for more complex field tags. See the Example Request samples below.\nFor complex field tags, the form data accepts the \"Tags\" Key which must have a tag_name and SignNow Field creation information as described in the call PUT /document/ at the reference link https://api-eval.signnow.com/document/fieldextract.",
+        "operationId": "uploads-a-file-that-contains-signnow-document-field-tags-simple-field-tag",
+        "parameters": [
+          {
+            "name": "Content_type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "multipart/form-data"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/document": {
+      "post": {
+        "tags": [],
+        "summary": "POST /document",
+        "description": "Uploads a file and creates a document. This endpoint accepts .doc, .docx, .pdf, and .png file types.",
+        "operationId": "uploads-a-file-and-creates-a-document",
+        "parameters": [
+          {
+            "name": "Content_type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "multipart/form-data"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "description": "",
+                    "format": "binary"
+                  },
+                  "integration_id": {
+                    "type": "string",
+                    "description": ""
+                  },
+                  "mydata1": {
+                    "type": "string",
+                    "description": ""
+                  },
+                  "mydata2": {
+                    "type": "string",
+                    "description": ""
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/document/{document_id}/invite": {
+      "post": {
+        "tags": [],
+        "summary": "POST /document//invite",
+        "description": "Create an invite to sign a document. You can create a simple free form invite or a role-based invite.",
+        "operationId": "create-an-invite-to-sign-a-document",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Email send setting for invite. Allowed value: disable",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "disable"
+            }
+          },
+          {
+            "name": "document_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization Bearer",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "from",
+                  "to"
+                ],
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "description": "The email of the inviter"
+                  },
+                  "to": {
+                    "type": "array",
+                    "description": "An array of SIGNERS that you would like to send the invite to",
+                    "items": {
+                      "properties": {
+                        "email": {
+                          "type": "string",
+                          "description": "A string representing the email address of the signer.",
+                          "default": ""
+                        },
+                        "role": {
+                          "type": "string",
+                          "description": "A string representing the name of the role the signer will be required to fulfill.",
+                          "default": ""
+                        },
+                        "order": {
+                          "type": "string",
+                          "description": "A string representing the order the signer will sign the document in. Multiple signers can have the same order and they will be asked to sign at the same time.",
+                          "default": ""
+                        },
+                        "role_id": {
+                          "type": "string",
+                          "description": "A value is required for this legacy parameter. We suggest using an empty string.",
+                          "default": ""
+                        },
+                        "authentication_type": {
+                          "type": "string",
+                          "description": "",
+                          "default": ""
+                        },
+                        "password": {
+                          "type": "string",
+                          "description": "A string representing the password that will be required by the signer to open and sign the document.",
+                          "default": ""
+                        },
+                        "expiration_days": {
+                          "type": "integer",
+                          "description": "Integer representing the number of days in which the invite will expire.",
+                          "default": "",
+                          "format": "int32"
+                        },
+                        "reminder": {
+                          "type": "integer",
+                          "description": "Integer representing the number of days after the invite is sent in which the user will be reminded with another email if the invite hasn't been fulfilled.",
+                          "default": "",
+                          "format": "int32"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "cc": {
+                    "type": "array",
+                    "description": "An array of emails that will be cced in the invite",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "subject": {
+                    "type": "string",
+                    "description": "The subject of the email"
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "The message body of the email invite"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/template": {
+      "post": {
+        "tags": [],
+        "summary": "POST /template",
+        "description": "Create a template by flattening an existing document.",
+        "operationId": "create-a-template",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "document_id",
+                  "document_name"
+                ],
+                "properties": {
+                  "document_id": {
+                    "type": "string",
+                    "description": "The id of the document"
+                  },
+                  "document_name": {
+                    "type": "string",
+                    "description": "The name of the template"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/template/{template_id}/copy": {
+      "post": {
+        "tags": [],
+        "summary": "POST /template//copy",
+        "description": "Create a new document by copying a flattened document. If a name is not supplied than it will default to the original document's name.",
+        "operationId": "create-a-new-document-by-copying-a-flattened-document",
+        "parameters": [
+          {
+            "name": "template_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "document_name"
+                ],
+                "properties": {
+                  "document_name": {
+                    "type": "string",
+                    "description": "The name of the newly copied document"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/link": {
+      "post": {
+        "tags": [],
+        "summary": "POST /link",
+        "description": "Creates a Signing Link",
+        "operationId": "link",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "document_id"
+                ],
+                "properties": {
+                  "document_id": {
+                    "type": "string",
+                    "description": "The ID of the document"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/event_subscription": {
+      "get": {
+        "tags": [],
+        "summary": "GET /event_subscription",
+        "description": "Get an event subscription.",
+        "operationId": "event-subscription",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      },
+      "post": {
+        "tags": [],
+        "summary": "POST /event_subscription",
+        "description": "Used for creating webhooks that will be triggered when the specified event takes place.",
+        "operationId": "event-subscription-1",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "event",
+                  "callback_url"
+                ],
+                "properties": {
+                  "event": {
+                    "type": "string",
+                    "description": "The event that triggers the webhook (see \"Events Table\")"
+                  },
+                  "callback_url": {
+                    "type": "string",
+                    "description": "The URL called when event is triggered"
+                  },
+                  "use_tls_12": {
+                    "type": "boolean",
+                    "description": ""
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/folder/{folder_id}?": {
+      "get": {
+        "tags": [],
+        "summary": "GET /folder/?",
+        "description": "Gets all folder information including an array of all documents inside that folder. You can provide optional filter parameters for the documents returned.\nExample request",
+        "operationId": "gets-all-folder-information",
+        "parameters": [
+          {
+            "name": "filters",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter-values",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortby",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folder_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/event_subscription/{EVENT_SUBSCRIPTION_ID}": {
+      "delete": {
+        "tags": [],
+        "summary": "DELETE /event_subscription/",
+        "description": "Get an event subscription.",
+        "operationId": "delete-event_subscription",
+        "parameters": [
+          {
+            "name": "EVENT_SUBSCRIPTION_ID",
+            "in": "path",
+            "description": "Unique ID of the event subscription to be deleted",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false
+      }
+    },
+    "/document/{document_id}/integration/object/smartfields": {
+      "post": {
+        "tags": [],
+        "summary": "POST document/{document_id}/integration/object/smartfields",
+        "description": "This will allow you to insert data onto a document's Smart Fields using the API to fill in those fields with data.\n\nYou can add Smartfields to a template via the front end option under more labeled \"Smartfields\". Once added you will be able to make copies of the document and post to the document's Smartfields. \n\n***Please note that Smartfield names are case sensitive.",
+        "operationId": "post-document-smartfields",
+        "parameters": [
+          {
+            "name": "Content_type",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "application/json"
+            }
+          },
+          {
+            "name": "document_id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": null,
+        "deprecated": false,
+        "security": []
+      }
+    }
+  },
+  "x-headers": [],
+  "x-explorer-enabled": true,
+  "x-proxy-enabled": true,
+  "x-samples-enabled": true,
+  "x-samples-languages": [
+    "curl",
+    "node",
+    "ruby",
+    "javascript",
+    "python"
+  ]
+}
